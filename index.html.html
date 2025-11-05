@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Geometry of Linear Programming — Interactive</title>
+<meta name="description" content="Interactive visual introduction to the geometry of Linear Programming. Videos, quizzes, simulator — single-file dark theme.">
+<style>
+  :root{
+    --bg:#071227;
+    --surface:#0b1220;
+    --card:#071827;
+    --muted:#9fb6bf;
+    --accent-teal:#0ea5a4;
+    --accent-blue:#2563eb;
+    --glass: rgba(255,255,255,0.03);
+    --radius:12px;
+    --soft-shadow: 0 10px 40px rgba(2,6,23,0.65);
+    --glass-2: rgba(255,255,255,0.02);
+    --text:#e6eef6;
+  }
+
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,var(--bg),#041018);color:var(--text);scroll-behavior:smooth;}
+  a{color:inherit;text-decoration:none}
+  img,svg,iframe,canvas{max-width:100%;display:block}
+
+  header.site-header{
+    background:linear-gradient(90deg,var(--accent-blue),var(--accent-teal));
+    color:white;padding:14px 20px;border-radius:0 0 16px 16px;box-shadow:var(--soft-shadow);
+    position:fixed;top:0;left:0;width:100%;z-index:1100;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+  }
+  .brand{display:flex;flex-direction:column}
+  .brand h1{margin:0;font-size:18px;font-weight:700}
+  .brand .tag{font-size:12px;opacity:0.95}
+  .top-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .nav-link{font-weight:700;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.06);display:inline-flex;align-items:center;gap:8px;transition:transform .18s,background .18s}
+  .nav-link:hover{transform:translateY(-3px);background:rgba(255,255,255,0.12)}
+  .nav-link.active{background:rgba(255,255,255,0.14);box-shadow:0 6px 18px rgba(0,0,0,0.35)}
+  .nav-icon{font-size:17px;transition:transform .28s}
+  .nav-link:hover .nav-icon{transform:rotate(10deg) scale(1.05)}
+
+  .scroll-progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--accent-blue),var(--accent-teal));width:0%;z-index:1200;box-shadow:0 0 12px rgba(14,165,164,0.45)}
+
+  .container{max-width:1100px;margin:0 auto;padding:160px 22px 60px;}
+
+  .tab-panel{display:none;opacity:0;transform:translateY(8px);transition:opacity .36s ease, transform .36s ease}
+  .tab-panel.active{display:block;opacity:1;transform:none}
+
+  .card{background:var(--card);border-radius:12px;padding:18px;margin-bottom:18px;box-shadow:0 12px 40px rgba(2,6,23,0.45);border:1px solid rgba(255,255,255,0.02)}
+  h2{color:var(--accent-teal);margin:0 0 10px 0}
+  p{color:var(--muted);margin:0 0 12px 0}
+
+  .videos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px}
+  .video-card{background:var(--glass-2);padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+  .video-title{color:#dff8f6;font-weight:700;margin-bottom:8px}
+
+  .quiz-wrap{max-width:980px;margin:6px auto 24px auto}
+  .quiz-card{background:#081323;border-radius:12px;padding:16px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 8px 28px rgba(2,6,23,0.5)}
+  .quiz-card h3{margin:0 0 8px 0;color:#c7f1ec}
+  .quiz-card p{color:var(--muted);margin:0 0 12px}
+  .options label{display:block;margin:6px 0;color:#dff8f6;cursor:pointer}
+  .options input{margin-right:8px}
+  .check-answer{margin-top:12px;padding:8px 12px;border-radius:8px;border:none;background:linear-gradient(180deg,var(--accent-teal),var(--accent-blue));color:#021218;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(14,165,164,0.12)}
+  .check-answer:hover{transform:translateY(-3px)}
+  .feedback{margin-top:8px;font-weight:700}
+  .solution{margin-top:10px;background:rgba(255,255,255,0.01);padding:10px;border-radius:8px;color:#cfeee7;display:none;border:1px dashed rgba(255,255,255,0.03)}
+
+  .sim-frame{width:100%;height:720px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 40px rgba(2,6,23,0.45);background:#081323}
+
+  .tab-home-section h2{color:var(--accent-teal); margin-top:0}
+  .diagram{text-align:center; margin-top:16px;}
+  canvas { border-radius:10px; background:#0d1325; width:100%; height:auto; max-height:520px; display:block; margin: 12px 0; border:1px solid rgba(255,255,255,0.03); }
+
+  .section-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:12px}
+  .topic-card{display:flex;gap:12px;align-items:flex-start}
+  .topic-art{flex:0 0 110px;border-radius:10px;padding:8px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.02)}
+  .topic-copy{flex:1}
+
+  .muted{color:var(--muted)}
+  .small{font-size:13px}
+  .btn{display:inline-block;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);color:var(--text);cursor:pointer}
+  .btn:hover{transform:translateY(-3px)}
+
+  @media (max-width:760px){
+    .container{padding:200px 14px 40px}
+    .sim-frame{height:520px}
+    .topic-art{display:none}
+  }
+</style>
+</head>
+<body>
+
+  <div id="scrollProgress" class="scroll-progress" aria-hidden="true"></div>
+
+  <header class="site-header" role="banner">
+    <div class="brand" aria-hidden="false">
+      <h1>Geometry of Linear Programming</h1>
+      <div class="tag small">Interactive — Videos • Quizzes • Simulator</div>
+    </div>
+
+    <nav class="top-nav" role="navigation" aria-label="Primary">
+      <a class="nav-link" href="#home" data-tab="home" role="button"><span class="nav-icon">🏠</span>Home</a>
+      <a class="nav-link" href="#videos" data-tab="videos" role="button"><span class="nav-icon">🎬</span>Videos</a>
+      <a class="nav-link" href="#quizzes" data-tab="quizzes" role="button"><span class="nav-icon">🧩</span>Quizzes</a>
+      <a class="nav-link" href="#simulator" data-tab="simulator" role="button"><span class="nav-icon">⚙️</span>Simulator</a>
+    </nav>
+  </header>
+
+  <main class="container" id="mainContent">
+
+    <section id="home" class="tab-panel active tab-home-section" role="tabpanel" aria-labelledby="tab-home">
+
+      <section class="card">
+        <h2>🌐 Linear Programming: An Easy Overview</h2>
+        <p class="muted small">A concise, approachable guide to the fundamental ideas of linear programming — objective functions, constraints, methods, and real-world uses.</p>
+      </section>
+
+      <section class="card">
+        <div class="section-grid">
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Objective function icon">
+                <rect x="6" y="22" width="88" height="56" rx="8" fill="#081822"/>
+                <polyline points="12,68 28,44 44,56 60,36 76,50" stroke="#0ea5a4" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="76" cy="50" r="4" fill="#ff3b3b"/>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h3>🧩 What is Linear Programming?</h3>
+              <p>
+                <strong>Linear Programming (LP)</strong> is a mathematical method used to <strong>find the best possible result</strong> (maximize or minimize) of a linear objective function subject to linear constraints (equations or inequalities).
+              </p>
+            </div>
+          </div>
+
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Why linear icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#071827"/>
+                <path d="M18 70 L36 36 L54 52 L72 22" stroke="#2563eb" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <circle cx="72" cy="22" r="4" fill="#0ea5a4"/>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h3>💡 Why “Linear” and “Programming”?</h3>
+              <p>
+                <strong>Linear</strong>: only first-degree terms (no exponents). <strong>Programming</strong>: not coding — it means planning or selecting an optimal choice from alternatives.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>⚙️ Main Components of Linear Programming</h2>
+        <div class="section-grid">
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Components icon">
+                <rect x="8" y="8" width="84" height="84" rx="12" fill="#061421"/>
+                <g fill="#dff8f6">
+                  <rect x="18" y="22" width="64" height="10" rx="4"/>
+                  <rect x="18" y="40" width="48" height="10" rx="4" opacity="0.9"/>
+                  <rect x="18" y="58" width="32" height="10" rx="4" opacity="0.8"/>
+                </g>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <p>
+                A typical LP problem includes:
+                <ul>
+                  <li><strong>Decision Variables</strong> — unknowns you control.</li>
+                  <li><strong>Constraints</strong> — linear limits that must be satisfied.</li>
+                  <li><strong>Objective Function</strong> — the linear formula to maximize or minimize.</li>
+                  <li><strong>Data</strong> — the numerical coefficients and constants used in the model.</li>
+                </ul>
+              </p>
+            </div>
+          </div>
+
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Non-negativity icon">
+                <rect x="6" y="6" width="88" height="88" rx="12" fill="#05121a"/>
+                <text x="50" y="60" fill="#9fb6bf" font-size="28" text-anchor="middle" font-family="Arial">x ≥ 0</text>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h3>📏 Key Characteristics</h3>
+              <p>
+                Valid LPs must have:
+                <ul>
+                  <li><strong>Quantitative Constraints</strong> — numeric limits.</li>
+                  <li><strong>Linearity</strong> — no exponents or products of variables.</li>
+                  <li><strong>Objective Function</strong> — linear expression to optimize.</li>
+                  <li><strong>Non-Negativity</strong> — variables ≥ 0.</li>
+                  <li><strong>Finiteness</strong> — solutions and variables finite.</li>
+                </ul>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>🧮 Methods of Solving Linear Programming Problems</h2>
+        <div class="section-grid">
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Graphical method icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#071427"/>
+                <g stroke="#0ea5a4" stroke-width="2" fill="none">
+                  <line x1="14" y1="78" x2="86" y2="30"/>
+                  <line x1="14" y1="60" x2="86" y2="60"/>
+                </g>
+                <circle cx="40" cy="52" r="4" fill="#ff3b3b"/>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h3>1. Graphical Method</h3>
+              <p>
+                Best for problems with <strong>two variables</strong>. Plot each constraint, identify the feasible region (intersection), then evaluate the objective at corner points to find the optimum.
+              </p>
+            </div>
+          </div>
+
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Simplex icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#071427"/>
+                <g stroke="#2563eb" stroke-width="3" fill="none">
+                  <path d="M20 70 L40 40 L60 48 L80 22" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+                <text x="50" y="84" fill="#9fb6bf" font-size="11" text-anchor="middle">Simplex</text>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h3>2. Simplex Method</h3>
+              <p>
+                An algorithmic method for larger problems (more than two variables and many constraints). It traverses corner points of the feasible region in a structured way to locate the optimal vertex.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>📊 Example Problem (Graphical Method)</h2>
+        <p class="muted">Objective: evaluate a sample LP using the graphical technique.</p>
+        <div class="section-grid">
+          <div class="card" style="padding:12px;">
+            <strong>Objective:</strong>
+            <pre style="background:rgba(255,255,255,0.02);padding:8px;border-radius:6px;margin:8px 0">z = 5x + 3y</pre>
+            <strong>Subject to:</strong>
+            <pre style="background:rgba(255,255,255,0.02);padding:8px;border-radius:6px;margin:8px 0">x + 2y ≤ 14
+3x − y ≥ 0
+x − y ≤ 2
+x, y ≥ 0</pre>
+            <p class="small muted">Plot the constraints, find the feasible region, then evaluate z at the corner points.</p>
+          </div>
+
+          <div class="card" style="padding:12px;">
+            <div class="diagram">
+              <canvas id="lpGraph" width="800" height="480" aria-label="LP visualization canvas"></canvas>
+              <p class="small muted">Interactive visualization (example). The feasible region is shaded and the red point shows an optimal corner.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>🌍 Applications of Linear Programming</h2>
+        <div class="section-grid">
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Business icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#061322"/>
+                <g fill="#dff8f6">
+                  <rect x="18" y="28" width="24" height="36" rx="3"/>
+                  <rect x="46" y="36" width="20" height="28" rx="3" opacity="0.95"/>
+                </g>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h4>Business & Management</h4>
+              <p class="muted">Used for production planning and profit maximization or cost minimization — choose how many units of each product to make given limited resources.</p>
+            </div>
+          </div>
+
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Engineering icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#061322"/>
+                <path d="M30 70 L50 40 L70 56" stroke="#0ea5a4" stroke-width="4" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h4>Engineering</h4>
+              <p class="muted">Optimize material use, machine schedules, or energy consumption subject to design and capacity constraints.</p>
+            </div>
+          </div>
+
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Transport icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#061322"/>
+                <g fill="#dff8f6">
+                  <rect x="20" y="46" width="56" height="18" rx="3"/>
+                  <circle cx="34" cy="68" r="4"/>
+                  <circle cx="66" cy="68" r="4"/>
+                </g>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h4>Transportation</h4>
+              <p class="muted">Find shortest/cheapest routes, schedule deliveries, or allocate fleets to minimise time/fuel/costs.</p>
+            </div>
+          </div>
+
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Agriculture icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#061322"/>
+                <path d="M24 60 C34 40, 46 40, 56 60" stroke="#2563eb" stroke-width="4" fill="none"/>
+                <circle cx="40" cy="52" r="3" fill="#0ea5a4"/>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h4>Agriculture</h4>
+              <p class="muted">Decide crop mix to maximise yield or profit given land, water, and labour restrictions.</p>
+            </div>
+          </div>
+
+          <div in="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Education icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#061322"/>
+                <path d="M20 34 L50 18 L80 34" stroke="#dff8f6" stroke-width="3" fill="none"/>
+                <rect x="26" y="40" width="48" height="36" rx="4" fill="#0ea5a4" opacity="0.06"/>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h4>Education</h4>
+              <p class="muted">Used to create efficient class schedules, allocate teachers, and manage facilities.</p>
+            </div>
+          </div>
+
+          <div class="topic-card">
+            <div class="topic-art" aria-hidden="true">
+              <svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Health icon">
+                <rect x="6" y="6" width="88" height="88" rx="10" fill="#061322"/>
+                <g stroke="#0ea5a4" stroke-width="3" fill="none">
+                  <path d="M38 32 v8 h8 v-8z"/>
+                </g>
+                <text x="50" y="76" text-anchor="middle" font-size="11" fill="#9fb6bf">Diets</text>
+              </svg>
+            </div>
+            <div class="topic-copy">
+              <h4>Health & Nutrition</h4>
+              <p class="muted">Plan diets that meet nutrition requirements at minimum cost using LP diet models.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>🌱 Why Linear Programming Matters</h2>
+        <p>
+          LP enables efficient use of limited resources, simplifies complex decision-making involving many variables, and provides clear, logical, optimal solutions for planning and resource allocation.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>🧾 Summary</h2>
+        <ul>
+          <li>Linear Programming finds the best (maximum/minimum) value of a linear objective under linear constraints.</li>
+          <li>All relationships must be linear and variables are typically restricted to non-negative values.</li>
+          <li>For two-variable problems use the graphical method; for larger problems use the Simplex method.</li>
+          <li>LP is widely used in industry, engineering, transport, agriculture, education, and health.</li>
+        </ul>
+        <p class="small muted">Original content adapted from supplied text; visual icons added for clarity.</p>
+      </section>
+
+    </section>
+
+    <section id="videos" class="tab-panel" role="tabpanel" aria-labelledby="tab-videos">
+      <section class="card">
+        <h2>Video Lectures</h2>
+        <p>Click play to watch. Videos are embedded for in-page viewing.</p>
+
+        <div class="videos-grid" aria-live="polite">
+          <div class="video-card" aria-label="Video 1">
+            <div class="video-title">Intro to Linear Programming</div>
+            <iframe src="https://www.youtube.com/embed/K7TL5NMlKIk" title="Intro to Linear Programming" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>
+
+          <div class="video-card" aria-label="Video 2">
+            <div class="video-title">Linear Programming (Basics & Examples)</div>
+            <iframe src="https://www.youtube.com/embed/Bzzqx1F23a8" title="Linear Programming Basics & Examples" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>
+
+          <div class="video-card" aria-label="Video 3">
+            <div class="video-title">Simplex Method Problem 1</div>
+            <iframe src="https://www.youtube.com/embed/FYqg62rYxhs" title="Simplex Method Problem 1 — Linear Programming" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>
+
+          <div class="video-card" aria-label="Video 4">
+            <div class="video-title">Linear Programming Optimization Examples</div>
+            <iframe src="https://www.youtube.com/embed/Y7e7DCsDUMY" title="Linear Programming Optimization Examples" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="quizzes" class="tab-panel" role="tabpanel" aria-labelledby="tab-quizzes">
+      <section class="card">
+        <h2>Practice Quizzes: Linear Programming</h2>
+        <p>Choose an answer and click <strong>Check Answer</strong>. After two wrong attempts the solution becomes available.</p>
+
+        <div class="quiz-wrap" id="quizWrap">
+          <!-- quiz cards as before -->
+          <!-- Problem 1 -->
+          <div class="quiz-card" data-qnum="1">
+            <h3>Problem 1: Maximizing Profit</h3>
+            <p>A factory makes chairs and tables. Each chair requires 3 hours of labour and each table 5 hours. The factory has 60 hours available. Profit per chair is ₱200 and per table ₱300. How many of each should be made to maximise profit?</p>
+            <div class="options">
+              <label><input type="radio" name="q1" value="a"> a) 0 chairs, 12 tables</label>
+              <label><input type="radio" name="q1" value="b"> b) 10 chairs, 6 tables</label>
+              <label><input type="radio" name="q1" value="c"> c) 20 chairs, 0 tables</label>
+              <label><input type="radio" name="q1" value="d"> d) 15 chairs, 3 tables</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              P = 200c + 300t, subject to 3c + 5t ≤ 60.<br>
+              Corner points: (0,0), (0,12), (20,0).<br>
+              Max P = ₱4,000 at (20,0).<br><br>
+              ✅ <strong>Answer:</strong> 20 chairs, 0 tables (₱4,000 profit)
+            </div>
+          </div>
+
+          <!-- Problem 2 -->
+          <div class="quiz-card" data-qnum="2">
+            <h3>Problem 2: Diet Optimization</h3>
+            <p>A diet must include at least 60 g of protein and 30 g of fat. Food A provides 20 g protein and 10 g fat per serving; Food B provides 10 g protein and 20 g fat per serving. Minimise the total number of servings.</p>
+            <div class="options">
+              <label><input type="radio" name="q2" value="a"> a) 0 servings A, 6 servings B</label>
+              <label><input type="radio" name="q2" value="b"> b) 3 servings A, 0 servings B</label>
+              <label><input type="radio" name="q2" value="c"> c) 2 servings A, 1 serving B</label>
+              <label><input type="radio" name="q2" value="d"> d) 1 serving A, 2 servings B</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              S = a + b, subject to 20a + 10b ≥ 60, 10a + 20b ≥ 30.<br>
+              Intersection at (3,0) minimises servings.<br><br>
+              ✅ <strong>Answer:</strong> 3 servings of Food A, 0 of B (3 total)
+            </div>
+          </div>
+
+          <!-- Problem 3 -->
+          <div class="quiz-card" data-qnum="3">
+            <h3>Problem 3: Minimising Transport Cost</h3>
+            <p>A company needs to transport goods from two warehouses (A and B) to a store. From A it costs ₱5 per box, from B ₱8 per box. The store needs at least 200 boxes, and A can send at most 150. Minimise the transportation cost.</p>
+            <div class="options">
+              <label><input type="radio" name="q3" value="a"> a) 150 boxes A, 50 boxes B</label>
+              <label><input type="radio" name="q3" value="b"> b) 100 boxes A, 100 boxes B</label>
+              <label><input type="radio" name="q3" value="c"> c) 0 boxes A, 200 boxes B</label>
+              <label><input type="radio" name="q3" value="d"> d) 200 boxes A, 0 boxes B</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              C = 5a + 8b, subject to a + b ≥ 200, a ≤ 150.<br>
+              Minimum at (150,50).<br><br>
+              ✅ <strong>Answer:</strong> 150 boxes from A, 50 from B (₱1,150)
+            </div>
+          </div>
+
+          <!-- Problem 4 -->
+          <div class="quiz-card" data-qnum="4">
+            <h3>Problem 4: Alloy Composition</h3>
+            <p>A metal alloy must contain at least 40% copper and 25% zinc. Metal X has 60% copper & 20% zinc; Metal Y has 30% copper & 40% zinc. Determine the blend minimising cost if Metal X costs ₱200/kg and Y costs ₱150/kg.</p>
+            <div class="options">
+              <label><input type="radio" name="q4" value="a"> a) ½ Metal X, ½ Metal Y</label>
+              <label><input type="radio" name="q4" value="b"> b) ⅓ Metal X, ⅔ Metal Y</label>
+              <label><input type="radio" name="q4" value="c"> c) ¼ Metal X, ¾ Metal Y</label>
+              <label><input type="radio" name="q4" value="d"> d) All Metal Y</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              Minimise C = 200x + 150y, subject to copper & zinc constraints.<br>
+              Optimal ratio: ⅓ X, ⅔ Y.<br><br>
+              ✅ <strong>Answer:</strong> ⅓ Metal X, ⅔ Metal Y
+            </div>
+          </div>
+
+          <!-- Problem 5 -->
+          <div class="quiz-card" data-qnum="5">
+            <h3>Problem 5: Minimising Labour Cost</h3>
+            <p>A company needs at least 10 full-time and 15 part-time workers. Full-time costs ₱500/day, part-time ₱300/day. Find numbers of each type to minimise daily cost if total workers ≥ 30.</p>
+            <div class="options">
+              <label><input type="radio" name="q5" value="a"> a) 10 full-time, 20 part-time</label>
+              <label><input type="radio" name="q5" value="b"> b) 15 full-time, 15 part-time</label>
+              <label><input type="radio" name="q5" value="c"> c) 10 full-time, 15 part-time</label>
+              <label><input type="radio" name="q5" value="d"> d) 12 full-time, 18 part-time</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              C = 500f + 300p, subject to f ≥ 10, p ≥ 15, f + p ≥ 30.<br>
+              Minimum at (10,20): ₱11,000/day.<br><br>
+              ✅ <strong>Answer:</strong> 10 full-time, 20 part-time (₱11,000)
+            </div>
+          </div>
+
+          <!-- Problem 6 -->
+          <div class="quiz-card" data-qnum="6">
+            <h3>Problem 6: Catering Cost</h3>
+            <p>A caterer offers Standard platters (8 servings, $40) and Deluxe platters (12 servings, $65). A party for 320 guests must be served. Kitchen can prepare ≤20 Deluxe, ≥15 Standard. Minimise total cost.</p>
+            <div class="options">
+              <label><input type="radio" name="q6" value="a"> a) 40 Standard, 0 Deluxe</label>
+              <label><input type="radio" name="q6" value="b"> b) 20 Standard, 10 Deluxe</label>
+              <label><input type="radio" name="q6" value="c"> c) 30 Standard, 5 Deluxe</label>
+              <label><input type="radio" name="q6" value="d"> d) 25 Standard, 8 Deluxe</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              C = 40s + 65d, subject to 8s + 12d ≥ 320, d ≤ 20, s ≥ 15.<br>
+              Minimum at (40,0): $1600.<br><br>
+              ✅ <strong>Answer:</strong> 40 Standard platters, 0 Deluxe ($1600)
+            </div>
+          </div>
+
+          <!-- Problem 7 -->
+          <div class="quiz-card" data-qnum="7">
+            <h3>Problem 7: Shipping Cost</h3>
+            <p>A company must ship 1,000 kg of goods. Container A holds 50 kg ($40) and Container B holds 80 kg ($65). Only 20 of A and 15 of B available. Minimise shipping cost.</p>
+            <div class="options">
+              <label><input type="radio" name="q7" value="a"> a) 20 A, 0 B</label>
+              <label><input type="radio" name="q7" value="b"> b) 10 A, 10 B</label>
+              <label><input type="radio" name="q7" value="c"> c) 15 A, 5 B</label>
+              <label><input type="radio" name="q7" value="d"> d) 12 A, 9 B</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              C = 40a + 65b, subject to 50a + 80b ≥ 1000, a ≤ 20, b ≤ 15.<br>
+              Minimum at (20,0): $800.<br><br>
+              ✅ <strong>Answer:</strong> 20 Container A, 0 Container B ($800)
+            </div>
+          </div>
+
+          <!-- Problem 8 -->
+          <div class="quiz-card" data-qnum="8">
+            <h3>Problem 8: Theatre Seating</h3>
+            <p>A theatre offers Regular sections (120 seats, $3000) and VIP sections (200 seats, $5200). Must seat 2,000 people, at most 8 VIP and at least 5 Regular. Minimise total cost.</p>
+            <div class="options">
+              <label><input type="radio" name="q8" value="a"> a) 14 Regular, 0 VIP</label>
+              <label><input type="radio" name="q8" value="b"> b) 10 Regular, 5 VIP</label>
+              <label><input type="radio" name="q8" value="c"> c) 12 Regular, 2 VIP</label>
+              <label><input type="radio" name="q8" value="d"> d) 8 Regular, 4 VIP</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              C = 3000r + 5200v, subject to 120r + 200v ≥ 2000, v ≤ 8, r ≥ 5.<br>
+              Minimum at (14,0): $51,000.<br><br>
+              ✅ <strong>Answer:</strong> 14 Regular, 0 VIP ($51,000)
+            </div>
+          </div>
+
+          <!-- Problem 9 -->
+          <div class="quiz-card" data-qnum="9">
+            <h3>Problem 9: Bus Rental Cost</h3>
+            <p>A school trip needs 400 students seated. Small buses seat 40 ($280), large buses seat 70 ($450). At most 10 small and 5 large available. Minimise total cost.</p>
+            <div class="options">
+              <label><input type="radio" name="q9" value="a"> a) 3 small, 4 large</label>
+              <label><input type="radio" name="q9" value="b"> b) 4 small, 3 large</label>
+              <label><input type="radio" name="q9" value="c"> c) 5 small, 2 large</label>
+              <label><input type="radio" name="q9" value="d"> d) 6 small, 1 large</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              C = 280s + 450l, subject to 40s + 70l ≥ 400, s ≤ 10, l ≤ 5.<br>
+              Minimum at (3,4): $2,640.<br><br>
+              ✅ <strong>Answer:</strong> 3 small, 4 large ($2,640)
+            </div>
+          </div>
+
+          <!-- Problem 10 -->
+          <div class="quiz-card" data-qnum="10">
+            <h3>Problem 10: Office Chairs</h3>
+            <p>An office needs seating for 180 employees. Standard chairs cost $60 each and executive chairs cost $100 each. The company wants at least 20 executive chairs and at most 100 standard chairs. How many of each should be bought to minimise total cost?</p>
+            <div class="options">
+              <label><input type="radio" name="q10" value="a"> a) 100 Standard, 80 Executive</label>
+              <label><input type="radio" name="q10" value="b"> b) 80 Standard, 100 Executive</label>
+              <label><input type="radio" name="q10" value="c"> c) 120 Standard, 60 Executive</label>
+              <label><input type="radio" name="q10" value="d"> d) 90 Standard, 90 Executive</label>
+            </div>
+            <button class="check-answer">Check Answer</button>
+            <div class="feedback"></div>
+            <button class="toggle-solution" style="display:none;margin-top:8px">Show Solution</button>
+            <div class="solution">
+              C = 60s + 100e, subject to s + e ≥ 180, e ≥ 20, s ≤ 100.<br>
+              Minimum at (100,80): $14,000.<br><br>
+              ✅ <strong>Answer:</strong> 100 Standard, 80 Executive ($14,000)
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="simulator" class="tab-panel" role="tabpanel" aria-labelledby="tab-simulator">
+      <section class="card">
+        <h2>LP Visual Explorer</h2>
+        <p>Embedded visual simulator. If embedding is blocked, open the link in a new tab.</p>
+        <p style="margin:8px 0;"><a href="https://lp-visualizer-studio.lovable.app/?utm_source=lovable-editor" target="_blank" style="color:var(--accent-teal)">Open simulator in new tab</a></p>
+        <iframe class="sim-frame" src="https://lp-visualizer-studio.lovable.app/?utm_source=lovable-editor" title="LP Visual Explorer" loading="lazy"></iframe>
+      </section>
+    </section>
+
+  </main>
+
+  <footer style="text-align:center;padding:18px 0;color:var(--muted)">© 2025 Geometry of Linear Programming — Educational Resource</footer>
+
+  <script>
+    const navLinks = document.querySelectorAll('.nav-link');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    function setActiveTab(tabName, skipScroll=false){
+      panels.forEach(p=>{
+        if(p.id === tabName){
+          p.classList.add('active');
+          requestAnimationFrame(()=> p.style.opacity = '1');
+        } else {
+          p.classList.remove('active');
+          p.style.opacity = '';
+        }
+      });
+      navLinks.forEach(n => n.classList.toggle('active', n.dataset.tab === tabName));
+      if(!skipScroll) window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    navLinks.forEach(link=>{
+      link.addEventListener('click', e=>{
+        e.preventDefault();
+        const t = link.dataset.tab;
+        setActiveTab(t);
+      });
+      link.addEventListener('keydown', e=>{
+        if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); link.click(); }
+      });
+    });
+
+    setActiveTab('home', true);
+
+    const progressBar = document.getElementById('scrollProgress');
+    function updateProgress(){
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const percent = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+      progressBar.style.width = Math.min(Math.max(percent,0),100) + '%';
+    }
+    window.addEventListener('scroll', updateProgress);
+    window.addEventListener('resize', updateProgress);
+    updateProgress();
+
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.card').forEach(c=> observer.observe(c));
+
+    const correctAnswers = {
+      q1: "c", q2: "b", q3: "a", q4: "b", q5: "a",
+      q6: "a", q7: "a", q8: "a", q9: "a", q10: "a"
+    };
+    const attempts = {};
+
+    document.querySelectorAll('.quiz-card').forEach(card => {
+      const qnum = card.dataset.qnum;
+      const qname = `q${qnum}`;
+      attempts[qname] = 0;
+
+      const checkBtn = card.querySelector('.check-answer');
+      const feedback = card.querySelector('.feedback');
+      const toggleBtn = card.querySelector('.toggle-solution');
+      const solutionBox = card.querySelector('.solution');
+
+      if(toggleBtn) toggleBtn.style.display = 'none';
+      if(solutionBox) solutionBox.style.display = 'none';
+      if(feedback) feedback.textContent = '';
+
+      checkBtn.addEventListener('click', () => {
+        const selected = card.querySelector(`input[name="${qname}"]:checked`);
+        if (!selected) {
+          feedback.textContent = "⚠️ Please select an answer.";
+          feedback.style.color = "#ffb4b4";
+          return;
+        }
+        attempts[qname]++;
+
+        if (selected.value === correctAnswers[qname]) {
+          feedback.textContent = "✅ Correct! Great job!";
+          feedback.style.color = "#9fffd8";
+          if(toggleBtn) { toggleBtn.style.display = 'inline-block'; toggleBtn.textContent = 'Show Solution'; }
+        } else {
+          feedback.textContent = `❌ Incorrect. (${attempts[qname]} attempt${attempts[qname] > 1 ? 's' : ''}) Try again.`;
+          feedback.style.color = "#ff9b9b";
+          if (attempts[qname] >= 2 && toggleBtn) {
+            toggleBtn.style.display = 'inline-block';
+            toggleBtn.textContent = 'Show Solution (after 2 tries)';
+          }
+        }
+      });
+
+      if(toggleBtn){
+        toggleBtn.addEventListener('click', () => {
+          if(solutionBox.style.display === 'none' || solutionBox.style.display === ''){
+            solutionBox.style.display = 'block';
+            toggleBtn.textContent = 'Hide Solution';
+            solutionBox.scrollIntoView({behavior:'smooth', block:'center'});
+          } else {
+            solutionBox.style.display = 'none';
+            toggleBtn.textContent = 'Show Solution';
+          }
+        });
+      }
+
+      card.querySelectorAll('label').forEach(lbl => {
+        lbl.addEventListener('keydown', (e)=>{
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const input = lbl.querySelector('input');
+            if(input) input.checked = true;
+          }
+        });
+      });
+    });
+
+    (function drawLPGraph(){
+      const canvas = document.getElementById("lpGraph");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+      function scaleCanvas(){
+        const ratio = window.devicePixelRatio || 1;
+        const w = Math.min(900, document.querySelector('.container').clientWidth - 40);
+        const h = Math.round(w * 0.55);
+        canvas.width = w * ratio;
+        canvas.height = h * ratio;
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+        ctx.setTransform(ratio,0,0,ratio,0,0);
+        render();
+      }
+      function render(){
+        const W = canvas.width / (window.devicePixelRatio || 1);
+        const H = canvas.height / (window.devicePixelRatio || 1);
+        ctx.clearRect(0,0,W,H);
+
+        ctx.beginPath();
+        ctx.moveTo(50, H - 50);
+        ctx.lineTo(W - 50, H - 50);
+        ctx.moveTo(50, H - 50);
+        ctx.lineTo(50, 50);
+        ctx.strokeStyle = "#00ffcc";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(100, H - 150);
+        ctx.lineTo(W - 150, 120);
+        ctx.moveTo(50, H - 220);
+        ctx.lineTo(W - 80, H - 220);
+        ctx.moveTo(150, H - 50);
+        ctx.lineTo(W - 50, 120);
+        ctx.strokeStyle = "#0077ff";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(120, H - 170);
+        ctx.lineTo(240, H - 220);
+        ctx.lineTo(300, H - 260);
+        ctx.lineTo(200, H - 260);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(0, 255, 204, 0.18)";
+        ctx.fill();
+        ctx.strokeStyle = "#00ffcc";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        const px = 300, py = H - 260;
+        ctx.arc(px, py, 6, 0, 2*Math.PI);
+        ctx.fillStyle = "#ff3b3b";
+        ctx.fill();
+        ctx.font = "14px Inter, Arial";
+        ctx.fillStyle = "#00ffcc";
+        ctx.fillText("Optimal Solution", px + 12, py - 8);
+      }
+
+      window.addEventListener('resize', scaleCanvas);
+      scaleCanvas();
+    })();
+  </script>
+</body>
+</html>
